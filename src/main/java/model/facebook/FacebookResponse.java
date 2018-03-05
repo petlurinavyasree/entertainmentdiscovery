@@ -17,4 +17,8 @@ public class FacebookResponse {
     public List<ArtistData> getArtistData() {
         return artistData;
     }
+
+    public List<MovieData> getMovieData() {
+        return movieData;
+    }
 }

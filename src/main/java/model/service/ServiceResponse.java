@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import model.movie.MovieTitle;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -23,7 +24,7 @@ public class ServiceResponse {
     @JsonProperty("relatedMusic")
     private List<RelatedMusic> relatedMusic = null;
     @JsonProperty("relatedMovies")
-    private List<RelatedMovie> relatedMovies = null;
+    private Map<String,List<MovieTitle>> relatedMovies = null;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -38,12 +39,12 @@ public class ServiceResponse {
     }
 
     @JsonProperty("relatedMovies")
-    public List<RelatedMovie> getRelatedMovies() {
+    public Map<String,List<MovieTitle>> getRelatedMovies() {
         return relatedMovies;
     }
 
     @JsonProperty("relatedMovies")
-    public void setRelatedMovies(List<RelatedMovie> relatedMovies) {
+    public void setRelatedMovies(Map<String, List<MovieTitle>> relatedMovies) {
         this.relatedMovies = relatedMovies;
     }
 

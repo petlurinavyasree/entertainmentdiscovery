@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Discovery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script> type="text/javascript"</script>
+    <link rel="stylesheet" type="text/css" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <style type="text/css">
+        .artist-table{
+            display: none;
+            margin: 0 auto;
+        }
+        .movieResultsTable{
+            display: none;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th {
+            background-color: #4F69C6 ;
+            color: white;
+        }
+        form {
+            text-align: center;
+        }
+        h1 {
+            font: bold italic 2em/1em "Times New Roman", "MS Serif", "New York", serif;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            margin-right: 40px;
+            margin-left: 80px;
+            padding: 10px;
+            color: #17202A;
+            border-top: solid #17202A medium;
+            border-bottom: solid #17202A medium;
+            width: 500px;
+        }
+        body  {
+            background-image: url("wallpaper.jpg");
+            height: 100%;
+            background-position: center top;
+            background-repeat: no-repeat;
+            background-size: 1300px 760px;
+            background-size: cover;
+        }
+    </style>
+    <script type="text/javascript">
+        $(function(){$("#startDate").datepicker({dateFormat: 'dd-mm-yy',changeMonth: true,changeYear: true})});
+        $(function(){$("#endDate").datepicker({dateFormat: 'dd-mm-yy',changeMonth: true,changeYear: true})});
+        $( document ).ready(function () {
+            $('#btnGetData').click(function () {
+                $(".noresult").hide(500);
+                $(".artist-table").hide(500);
+                $(".movieResultsTable").hide(500);
+                $(".movieResults").hide(500);
+
+                var startDate = $('#startDate').val();
+                var endDate = $('#endDate').val();
+
+                var v1 = parent.document.URL.substring(parent.document.URL.indexOf('access_token='), parent.document.URL.length);
+                var v2 = v1.split("=")
+                var v3 = v2[1]
+                console.log(v3);
+
+                if(startDate.length == 0 || endDate == 0){/*alert("Start date and End date can not be empty");*/}
+                else
+                {
+                    if (Date.parse(startDate) > Date.parse(endDate))
+                    {
+                        alert("End date should be greater than Start date");
+                        $("#endDate").val("");
+                    }
+                    else
+                    {
+                        var requestData = "startDate="+startDate+'&endDate='+endDate+'&accessToken='+v3;
+                        $(document).ajaxStart(function(){
+                            // Show image container
+                            $("#loader").show();
+                        });
+                        $.ajax({
+
+                            url: 'http://localhost:8080/discover?'+requestData ,
+                            method: 'get',
+                            dataType:'json',
+                            success: function (myList) {
+                                returnTableData(myList);
+
+                            }
+                        });
+                    }
+                }
+            });
+        });
+        function returnTableData(myList)
+        {
+            var count = 0;
+            var row = "";
+            $.each(myList, function(music,artists){
+                if(music=="relatedMusic"){
+                    $.each(artists, function(i,artist){
+                        var artistName = artist["artist"];
+                        var artistCount = 0;
+                        var tracks = artist["tracks"];
+                        if(tracks.length > 0){
+                            $.each(tracks, function(ind, track){
+                                artistCount = tracks.length;
+                                var name = track["name"];
+                                var releaseDate = track["ReleaseDate"];
+                                if(ind==0)
+                                {
+                                    count = count + 1;
+                                    row = row + "<tr><td rowspan="+artistCount+">"+count+"</td><td rowspan="+artistCount+">"+artistName+"</td><td>"+name+"</td><td>"+releaseDate+"</td></tr>";
+                                }
+                                else{row = row + "<tr><td>"+name+"</td><td>"+releaseDate+"</td></tr>";}
+                            });
+                            if(count > 0);
+                            {
+                                $(".artist-body").html(row);
+                            }
+                        }
+                    });
+                }
+                if(music == "relatedMovies"){
+                row="";
+                moviesCount=0;
+                  $.each(artists,function(genre,movies){
+                  if(movies!=null)
+                  {  moviesCount=1;
+                     row= row+"<tr><td>"+genre+"</td><td>";
+                    $.each(movies, function(i, movie){
+                         if(movie!=null){
+                         moviesCount=1;
+                         row=row+movie["title"]+", ";
+                    }
+                    else{moviesCount=0;}
+                    });
+                    row=row.slice(0,-2);
+                    row=row+"</td>";
+                    }
+                  });
+                    $(document).ajaxComplete(function(){
+                        // Hide image container
+                        $("#loader").hide();
+                    });
+                  if(moviesCount!=0)
+                 {
+
+                  $(".movieResultsTable").html(row);
+                  $(".movieResultsTable").show();
+                  }
+                  else
+                  {$(".movieResults").html("<center><h1>NO MOVIE RESULTS FOUND</h1></center>");
+                   $(".movieResults").show(500);
+                  }
+                }
+
+            });
+            if(count == 0)
+            {$(".noresult").html("<center><h1>NO MUSIC RESULTS FOUND</h1></center>");
+            $(".noresult").show(500);}
+            else
+            {$(".artist-table").show(1000);}
+        }
+    </script>
+</head>
+<body>
+<h1 style="margin-left: auto; margin-right: auto; text-align: center;">Entertainment Discovery System </h1><br>
+
+<div class="search">
+    <form name="searchForm" action="javascript:void(0)" method="post">
+        <b>Start Date</b>: <input type="text" id="startDate" name="Start Date" required style="width: 160px; height: 24px; background-color: #AED6F1" />
+        <br /> <br/>
+       <b> End Date</b>: <input type="text" id="endDate" name="End Date" required style="width: 160px; height: 24px; background-color: #AED6F1" />
+        <br /> <br />
+        <input id="btnGetData" type="Submit" value="Search" style="width: 160px; height: 24px; background-color: #AED6F1">
+        <input type="Reset" value="Reset" style="width: 160px; height: 24px; background-color: #AED6F1">
+    </form>
+</div>
+<br /><br />
+<div class="list">
+    <table class="artist-table">
+        <caption><h2><b>Music</b></h2></caption>
+        <thead>
+        <tr><th>Number</th><th>Artist Name</th><th>Song</th><th>Release Date</th></tr>
+        </thead>
+        <tbody class="artist-body"></tbody>
+    </table>
+</div>
+<div class="noresult">
+
+</div>
+<div>
+    <br/><br/>
+    <div>
+        <div class="movieResults"></div>
+    <table class="movieResultsTable">
+        <caption><h2><b>Movies</b></h2></caption>
+        <thead>
+        <tr><th>Genre</th><th>Movie Names</th></tr>
+        </thead>
+
+    </table>
+
+        </div>
+</div>
+<div id='loader' style='display: none;'>
+    <p style="text-align:center;"><img src='reload.gif' width='200px' height='200px'></p>
+</div>
+</body>
+</html>
